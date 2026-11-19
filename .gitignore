@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.test-build/
+.host-test/
+.vscode-test/
+.trueforge/
+.env
+*.vsix
+artifacts/
+.DS_Store
+submission/profile.local.json
+# Generated recordings and their working captures are not part of the source submission.
+video/
+submission/workspaces/
+__pycache__/
+*.py[cod]

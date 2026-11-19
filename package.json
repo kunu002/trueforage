@@ -1,0 +1,205 @@
+{
+  "name": "trueforage",
+  "displayName": "TrueForage \u2014 Coding Assistant",
+  "description": "A workspace coding agent on TrueForge: edits, test execution, plans, review and task undo.",
+  "version": "0.3.0",
+  "publisher": "trueforage-team",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.104.0",
+    "node": ">=22.14.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onView:trueforage.panel"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "node scripts/build.mjs",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
+    "test:host": "node scripts/test-host.mjs",
+    "test:trueforge": "tsc -p tsconfig.test.json && node scripts/test-trueforge.mjs",
+    "preview": "node scripts/preview.mjs",
+    "playground": "node scripts/open-playground.mjs --playground",
+    "trueforge": "node scripts/trueforge.mjs",
+    "package": "vsce package --no-dependencies --allow-missing-repository --out trueforage-0.3.0.vsix",
+    "vscode:prepublish": "npm run build",
+    "assistant": "node scripts/open-playground.mjs",
+    "open:flask-demo": "node scripts/open-playground.mjs -- submission/workspaces/flask-3.1.3",
+    "test:live": "npm run build && node scripts/test-real-model.mjs",
+    "prepare:flask-demo": "node scripts/prepare-flask-demo.mjs",
+    "verify:flask-demo": "node scripts/verify-flask-demo.mjs"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "trueforage.open",
+        "title": "TrueForage: Open Chat"
+      },
+      {
+        "command": "trueforage.inline",
+        "title": "TrueForage: Edit Selection"
+      },
+      {
+        "command": "trueforage.chooseModel",
+        "title": "TrueForage: Choose Model"
+      },
+      {
+        "command": "trueforage.connect",
+        "title": "TrueForage: Connect to TrueForge"
+      },
+      {
+        "command": "trueforage.demo",
+        "title": "TrueForage: Try Review Playground"
+      },
+      {
+        "command": "trueforage.apply",
+        "title": "TrueForage: Apply Accepted Changes"
+      },
+      {
+        "command": "trueforage.undo",
+        "title": "TrueForage: Undo Task"
+      },
+      {
+        "command": "trueforage.cancel",
+        "title": "TrueForage: Cancel Generation"
+      },
+      {
+        "command": "trueforage.acceptHunk",
+        "title": "TrueForage: Accept Hunk",
+        "icon": "$(check)"
+      },
+      {
+        "command": "trueforage.rejectHunk",
+        "title": "TrueForage: Reject Hunk",
+        "icon": "$(close)"
+      },
+      {
+        "command": "trueforage.configureModel",
+        "title": "TrueForage: Connect Model"
+      },
+      {
+        "command": "trueforage.openHarness",
+        "title": "TrueForage: Open Model Settings"
+      },
+      {
+        "command": "trueforage.newSession",
+        "title": "TrueForage: New Chat"
+      },
+      {
+        "command": "trueforage.openEditor",
+        "title": "TrueForage: Open Coding Workspace"
+      },
+      {
+        "command": "trueforage.runTests",
+        "title": "TrueForage: Run Tests"
+      },
+      {
+        "command": "trueforage.history",
+        "title": "TrueForage: Conversation History"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "trueforage.inline",
+        "key": "ctrl+alt+i",
+        "mac": "cmd+alt+i",
+        "when": "editorHasSelection && editorTextFocus"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "trueforage",
+          "title": "TrueForage",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "trueforage": [
+        {
+          "type": "webview",
+          "id": "trueforage.panel",
+          "name": "TrueForage"
+        }
+      ]
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "trueforage.acceptHunk",
+          "when": "resourceScheme == trueforage",
+          "group": "navigation@1"
+        },
+        {
+          "command": "trueforage.rejectHunk",
+          "when": "resourceScheme == trueforage",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TrueForage",
+      "properties": {
+        "trueforage.harnessUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8790",
+          "description": "Local TrueForge harness URL. Model credentials are configured in TrueForge."
+        },
+        "trueforage.model": {
+          "type": "string",
+          "default": "",
+          "description": "Exact model name configured in TrueForge. Choose with TrueForage: Choose Model."
+        },
+        "trueforage.fallbackModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Configured TrueForge model names to try after primary retries fail."
+        },
+        "trueforage.contextBudget": {
+          "type": "integer",
+          "default": 24000,
+          "minimum": 1000,
+          "maximum": 24000,
+          "description": "Maximum UTF-8 bytes in each automatic context retrieval."
+        },
+        "trueforage.nodePath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional absolute path to Node.js 22.14+ for the local TrueForge runtime. Discovered automatically when empty."
+        },
+        "trueforage.workMode": {
+          "type": "string",
+          "enum": [
+            "agent",
+            "review",
+            "ask"
+          ],
+          "default": "agent",
+          "description": "Agent applies and saves changes and runs approved validation commands; Review stages hunks for human approval; Ask is read-only."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@truefoundry/trueforge-sdk": "0.183.0",
+    "@modelcontextprotocol/sdk": "1.25.1",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "@types/vscode": "1.104.0",
+    "@vscode/vsce": "3.6.0",
+    "@truefoundry/trueforge": "0.183.1",
+    "esbuild": "0.25.5",
+    "typescript": "5.8.3"
+  }
+}
